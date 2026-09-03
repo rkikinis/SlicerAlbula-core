@@ -7,6 +7,51 @@ Derived from the four things actually on the table, not from imagination: a **da
 CT, series 301), a **group** (the abdominal organs; a case's pre-op study), a **derivation** (this SEG
 came from that CT, by nnInteractive, on a date, by a person), and a **note** (needs review).
 
+## In plain language, before the code
+
+Think of a **library card catalogue**. The books are on the shelves — that is the DICOM data, sitting
+where it sits, untouched. The cards describe the books. **You never rearrange the library to make a
+reading list; you pull cards.**
+
+A "scene" here is a reading list. It is not a thing you build and then have to save. It is *whatever
+cards you pulled*.
+
+There are four kinds of card:
+
+1. **"Here is a thing."** A scan. The card says what it is, where the bytes live, what units and
+   orientation it uses, and what it means. Series 301, the cropped CT, gets one of these.
+2. **"These belong together."** A card holding a list of other cards. The abdominal organs. A case's
+   pre-op study.
+3. **"This came from that."** A card saying: *I made B out of A, using nnInteractive, on 16 July, and
+   it was me.* The chain 3 → 301 → 302 is two of these.
+4. **"A comment about this."** Needs review. Good quality. Excluded from the study.
+
+**The one idea that matters is card 3.** Today, when you edit a segmentation, the segmentation
+changes and the old one is gone. Here, editing *writes a new card* — the original is untouched and
+the new card points back at it. Which means:
+
+- **Editing and history become the same thing.** There is no separate undo machinery to build and get
+  wrong. The history *is* the cards.
+- **A colleague reviewing your work adds a card pointing at yours.** Yours does not move. Two people
+  can branch from the same point without fighting.
+- **How you got somewhere is readable**, because it is just the pile of cards, in order.
+
+Three smaller points, plainly:
+
+- **Cards are not numbered 1, 2, 3.** If they were, and you destroyed card 4173, the gap would tell
+  anyone that a card had been there. For data that arrived by accident, the gap *is* the trace. So
+  cards get labels that imply no order — a fingerprint of their own contents, or a random label.
+  Then removing one leaves nothing behind. That requirement came out of the deletion work, not out
+  of theory.
+- **Four specific kinds of card, not one card with lots of blank lines.** If there were one flexible
+  card, nothing would ever be *required*, and every program reading one would have to guess what was
+  filled in. With four kinds, a "this came from that" card cannot be completed without saying what it
+  came from. The form will not let you.
+- **Some things never get a card.** Where the camera is pointing, the brightness slider, where the
+  surgical tracker is at this instant. Those change constantly and filing them would produce sixty
+  cards a second. So a card may say *this model follows the tracker*, and the tracker's position
+  simply streams past, never filed.
+
 ## The shape
 
 ```ts
