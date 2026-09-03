@@ -211,3 +211,58 @@ guesses, doc comments so `deno doc --lint` gates them. Tests on the four real ca
 301 → 302 derivation chain, a group, a note, and the CT-plus-microscopy pair from `frame.test.ts` —
 plus the refusals: an unknown `type`, a derivation with no parent, a `Group` member id that resolves
 to nothing, a sequential-looking id.
+
+## A worked case: the Segmentations module, and why grouping is the point
+
+Ron loaded `RK-annotated segmented.mrb` into Slicer 5.13 and photographed the Segmentations module,
+with the note: *"In slicer you can not group the segmentations, which is a great annoyance to me."*
+
+What the module gives, per segment: **visibility · colour · opacity · name**, sortable by a header
+triangle, with double-click to edit the opacity and double-click to rename. Above the list, an
+**Overall visibility** and **Overall opacity**, then separate opacities for slice fill, slice outline
+and 3D. That last separation is worth copying and this project does not have it: one global
+"segment opacity" is the 3D one only.
+
+What the screenshot shows about the *absence* of grouping is more instructive than the controls.
+
+**The node list is the grouping.** The scene holds `vessel segmentation`, `Lung segmentation` and
+more. Separate nodes are how a user without groups makes groups — which means a segment belongs to
+exactly one, chosen when it was created, and seeing a different arrangement means switching nodes
+rather than switching views.
+
+**And the grouping leaks anyway.** Inside `vessel segmentation` sit `bone`, `lungs` and `vesselmask`,
+none of which is a vessel. Not carelessness: there is nowhere else to put something that was
+segmented in the same session.
+
+**Duplicates accumulate where a flat list cannot show structure.** `brachiocephalic vein` appears
+twice; `pulmonary artery` and `PA` are both present, as are `pulmonary vein` and `PV`. In a
+seventeen-row flat list with no hierarchy, a duplicate is invisible until you read every row.
+
+### What the record model gives that a node cannot
+
+A `Group` holds `members` as **edges**, so:
+
+- a segment can be in **several groups at once** — `aorta` is a vessel, an arterial structure, and
+  part of the mediastinum, and none of those has to win;
+- **the grouping is a view, not an ownership**, so "group by tissue" and "group by organ system" are
+  two queries over one set of records rather than two copies of the data;
+- a group's opacity **multiplies** its members', which is what makes bones-at-100 against
+  muscle-at-5 expressible without touching sixty-seven rows.
+
+The last one is the immediate need: the colorize page's readability comes entirely from per-group
+opacity, and one global multiplier cannot express it.
+
+### The identification problem, which is upstream of all of it
+
+Ron's naming workflow is *"toggle visibility to identify and then rename"* — find the segment by
+watching what disappears. That is elimination, and it is why naming sixty-seven nnInteractive
+segments "would have tripled the time": nnInteractive numbers them sequentially, and naming requires
+knowing the anatomy while painting.
+
+So the module's real problem is not the table. It is that identification runs backwards. The colorize
+page already does it forwards — *"shift+move to pick"* — and picking in 3D turns identification from
+seventeen visibility toggles into pointing at the thing.
+
+Which sets the order: **infer groups from the data** (mean HU per segment sorts bone from lung from
+soft tissue with no typing at all), then a grouped module over it, then presets that save group
+opacities. Naming stays optional throughout, because the common case is data that has none.
