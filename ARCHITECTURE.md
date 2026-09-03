@@ -251,12 +251,21 @@ which makes change propagation the central gap rather than one of many.
 
 ### These threaten the thesis
 
-1. **Editing in a query-derived model is unproven** — narrowed by the gallery, not closed.
-   `algorithms.html` and `nnlive.html` show interactive editing in the WebGPU stack, so the
-   *rendering and interaction* half is being solved. What no example shows is an edit landing as an
-   **appended record** that a query then re-derives, rather than as mutated state. The candidate
-   answer is the lineage model in `Slicer/DICOMProvenance`, generalized, plus the deletion design
-   above — candidate being the operative word.
+1. **Editing in a query-derived model is unproven** — and much narrower than it first looked.
+   Editing itself is not missing at all: **SlicerLive Native already ships a Segment Editor**, with
+   threshold and auto-threshold, paint and erase, islands (keep-largest, remove-small), smoothing
+   (median, open, close), margin grow/shrink, logical operations, and per-segment statistics —
+   `logic/segment-effects.ts` and `logic/segmentation-editor.ts`. Steve's `algorithms.html` and
+   `nnlive.html` push further, into brush strokes and a model in the loop.
+
+   So the open question is not *can we edit*; it is **does an edit land as an appended record that a
+   query re-derives, rather than as mutated state**. That is a much smaller and much more testable
+   question, and it is the whole of the remaining risk in principle 6. The candidate answer is the
+   lineage model in `Slicer/DICOMProvenance`, generalized, plus the deletion design above.
+
+   Note also where the unit debt actually sits: `applyMargin` takes `marginMm` and `spacingMm`. The
+   millimetre assumption is not buried in a reader — it is in the editor, in a number the user
+   types.
 
 2. **There is no change-propagation design at all.** If a view is a query result, what tells it the
    result changed, and how does a hundred-module GUI stay coherent? MRML answers this with events;
