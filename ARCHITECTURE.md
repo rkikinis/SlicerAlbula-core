@@ -90,14 +90,98 @@ This list is longer than the one above, and pretending otherwise would waste eve
 7. **Undo semantics.** Append-only gives you history; it does not automatically give you what a user
    means by ⌘Z, which usually includes restoring view state — and view state is a *binding*.
 
+## Deletion, which append-only has to answer first
+
+Ron's question: *how do you deal with data that got deleted from Slicer?* It is the sharpest
+objection to principle 6, and it has to be answered before anything is built on append-only.
+
+**Append-only does not mean immutable.** It means no *silent overwrite*. Deletion is therefore a
+first-class operation that must be designed, not an absence to be explained away with a tombstone.
+
+**There are two deletes, and conflating them is the bug.**
+
+| | means | history | reversible |
+|---|---|---|---|
+| **retract** | not in my scene; I am done with this result | survives | yes |
+| **purge** | this must not exist — patient data, withdrawn consent, a mistaken import | the *content* does not survive | no |
+
+Most systems implement only one, and usually the wrong one. Ron's own standing constraint is a purge:
+one patient study was deleted from this database deliberately and must not be propagated by accident.
+A tombstone would not satisfy that; a scene-level removal would not either.
+
+**Purge must be closed under references.** You cannot purge X while a derived record still points at
+it, unless the derivative is purged too or explicitly marked as orphaned. The useful part is that
+this is already *testable*: `Slicer/database/audit-database.py` defines a **zombie** as an index row
+whose file is gone and an **orphan** as a file with no row, so the post-purge invariant is "zero
+zombies, zero orphans" — a test we run today rather than a property we hope for.
+
+**Purge can find its own derivatives without a ledger.** Because a derived artifact stores the
+fingerprint of its source *inside itself* (principle 5), "purge everything derived from X" is a scan,
+not a bookkeeping exercise. This was not the reason for that principle; it is a payoff of it.
+
+**The receipt problem, and its resolution.** Ron wants that study gone *and* would want to know it was
+removed deliberately rather than lost. Those look contradictory. They are not, if the receipt keeps a
+**content fingerprint rather than the content**: *N objects, source fingerprint H, purged at T by A,
+for reason R*. That is enough to prove a deletion happened and to verify nothing dangling remains,
+while retaining no identifying information. **You can audit a deletion without retaining what was
+deleted.**
+
+Which yields a design rule with teeth:
+
+> **Provenance records must be written so that they never need purging.** Fingerprints and UIDs, never
+> names, never dates of birth.
+
+That rule comes from getting it wrong today. This workspace's git history recorded a birth date in two
+code comments and a patient surname in a note. `HEAD` is scrubbed, but *history is not purgeable
+without a rewrite* — which is precisely the situation the rule exists to prevent, discovered in our
+own repository within a day of writing the principle.
+
+**Honest limits.** Purge cannot reach exported data — a DICOM export, a shared file, a published page
+— and it cannot reach someone else's copy. It follows that export is the boundary where deletion
+stops being a technical guarantee and becomes a policy one, and the design should say so rather than
+imply otherwise.
+
+**For comparison, what happens today.** MRML has no answer at all: `RemoveNode()` and the node is
+gone from the scene, with nothing recording that it existed and no relationship to any MRB you saved
+earlier. ctkDICOMDatabase deletes rows and files, and the skew between those two is exactly why the
+audit script had to be written. So "deleted from Slicer" currently means *gone from this session, and
+possibly still present in three MRBs and a database*.
+
 ## The gaps
+
+### Checked against Steve's gallery first
+
+`pieper.github.io/live/` is 25 scenes, and several items that were on this list are already
+prototyped there — which is the difference between a gap and an unread bibliography:
+
+- **`deform.html`** — a nonlinear thin-plate-spline landmark deform. **Transforms** were gap 4.
+- **`algorithms.html`** and **`nnlive.html`** (both work-in-progress) — a WebGPU-native segment
+  editor with brush strokes, and interactive segmentation where each click runs a model. **Editing**
+  was gap 1, and it is being built.
+- **`cardiac.html`** — 4D volume rendering of a beating heart. 4D is not hypothetical.
+- **`segroulette.html`** — a random segmentation out of **190,000+ IDC DICOM SEGs across 36
+  collections**. **Scale** was gap 13; there is prior art at three times this database's size.
+- **`islands.html`** — a stress test for nested segmentations, tumours inside a liver. Directly
+  relevant to overlap, which a labelmap cannot represent.
+- **`remote.html`** — volume rendering on a transient cloud NVIDIA L4. The discrete-GPU case that was
+  deferred as "only matters for discrete cards" is live.
+- **`real.html`** — a chunked **OME-Zarr** volume streamed in, which is the typed-axes format
+  recommended above already in use.
+- The gallery itself fetches `scenes/index.json` and filters on `legacy` and `wip` flags. A fourth
+  independent instance of index-plus-selection, and it is the site's own front page.
+
+What that leaves is a sharper point rather than a softer one. Twenty-five focused pages each own
+their state, so none of them has had to answer how a hundred modules share one scene coherently —
+which makes change propagation the central gap rather than one of many.
 
 ### These threaten the thesis
 
-1. **Editing in a query-derived model is unproven.** Every shipped instance of scene-as-query is
-   read-only: the atlas, ReMINDer, our Zarr cache. Slicer exists to edit. The candidate answer is
-   append-only with the lineage model already prototyped in `Slicer/DICOMProvenance`, generalized —
-   but candidate is the operative word.
+1. **Editing in a query-derived model is unproven** — narrowed by the gallery, not closed.
+   `algorithms.html` and `nnlive.html` show interactive editing in the WebGPU stack, so the
+   *rendering and interaction* half is being solved. What no example shows is an edit landing as an
+   **appended record** that a query then re-derives, rather than as mutated state. The candidate
+   answer is the lineage model in `Slicer/DICOMProvenance`, generalized, plus the deletion design
+   above — candidate being the operative word.
 
 2. **There is no change-propagation design at all.** If a view is a query result, what tells it the
    result changed, and how does a hundred-module GUI stay coherent? MRML answers this with events;
@@ -112,7 +196,9 @@ This list is longer than the one above, and pretending otherwise would waste eve
 
 ### Large but tractable
 
-4. **Transforms.** Needs a record form for chains, hardening, and composition to world.
+4. **Transforms.** `deform.html` proves nonlinear TPS deformation runs; what is missing is the
+   *record form* — chains, hardening, composition to world — and how a deformation relates to the
+   frame declaration it is transforming between.
 5. **Where records live.** Zarr attributes cannot hold a BIDS dataset or a baffle's
    parameterization; ZMP manifests (Parquet, DuckDB-queryable) can. Undecided.
 6. **Undo, as distinct from history.**
@@ -132,8 +218,10 @@ This list is longer than the one above, and pretending otherwise would waste eve
 
 11. **Concurrency and more than one author.** Append-only should be a natural fit; untested.
 12. **PHI and access control in a query model.** A query that can select anything is a query that can
-    select the wrong thing.
-13. **Scale.** The atlas is 743 records. This database is 67,000 series.
+    select the wrong thing. Related to the deletion design above, and the harder half of it.
+13. **Scale** — partly answered elsewhere. `segroulette.html` selects from 190,000+ SEGs across 36
+    collections, so an index at that size is demonstrably queryable; what is untested is a *scene*
+    derived by query at that scale with editing on top.
 
 ## Order of work
 
