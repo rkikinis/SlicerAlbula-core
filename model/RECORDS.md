@@ -93,8 +93,13 @@ ability to branch from the middle.
   is ever asked.
 
 So the division of labour is: **the machine records what happened; the person occasionally says why
-it mattered** — and that contribution must be *rare and optional*. Requiring a reason on every edit
-is how a store fills up with "asdf".
+it mattered** — and that contribution must be *rare and optional*.
+
+A mandatory field does not produce information, it produces compliance. Demand a reason on every edit
+and you get "correction", "fix", "test", "." and whatever the fingers land on — which is **worse than
+an empty field**, because empty is honestly empty while junk looks like data and will be counted,
+searched and shown to someone as though it meant something. A note somebody chose to write is worth
+reading; a note somebody was forced to write is noise in the costume of a record.
 
 ### Significance can be inferred, so nobody has to tag it
 
