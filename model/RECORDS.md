@@ -71,7 +71,7 @@ gone — that asymmetry argues for recording finer than you show.
 
 ### The recording boundary is already defined, by the editor
 
-The natural unit is not invented, it is sitting in `logic/segment-effects.ts`: `applyThreshold`,
+The natural unit is not invented, it is sitting in SlicerLive's `logic/segment-effects.ts`: `applyThreshold`,
 `applyAutoThreshold`, `applyIslands`, `applySmoothing`, `applyMargin`, `applyLogical`. Each is a
 named operation whose parameters **fully determine its output**, which is exactly the property that
 makes a card worth having: it is describable ("grow 2 mm"), reproducible, and replayable.

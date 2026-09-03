@@ -1,7 +1,12 @@
-# Where we are, how this improves on MRML, and what is missing
+# The architecture: what is built, what it does differently, and what is missing
 
-**2026-09-03.** `README.md` says what this is; `../docs/architecture-principles.md` states the eleven
+**2026-09-03.** `README.md` says what this is; `docs/architecture-principles.md` states the eleven
 principles and where each came from. This document is the status and the honest gap list.
+
+MRML is the reference point throughout, because it is the most mature data model in this field and
+because arguing against the best available prior art is the only argument worth making. That is a
+*comparison*, not a dependency: nothing here imports from 3D Slicer or from SlicerLive, and the only
+runtime dependency in the whole repository is a test assertion library.
 
 ## Where we are
 
@@ -179,7 +184,7 @@ method that cannot skip its target, and the verification is part of the operatio
 ### The invariant
 
 Purge and expunge must both be **closed under references**: nothing may point at what is gone. This
-is already testable — `Slicer/database/audit-database.py` defines a **zombie** as an index row whose
+is already testable — the companion DICOM audit tool defines a **zombie** as an index row whose
 file is missing and an **orphan** as a file with no row, so the post-deletion condition is *zero
 zombies, zero orphans*, which we run rather than hope for.
 
@@ -223,7 +228,7 @@ rule that decays.
 
 **Purge must be closed under references.** You cannot purge X while a derived record still points at
 it, unless the derivative is purged too or explicitly marked as orphaned. The useful part is that
-this is already *testable*: `Slicer/database/audit-database.py` defines a **zombie** as an index row
+this is already *testable*: the companion DICOM audit tool defines a **zombie** as an index row
 whose file is gone and an **orphan** as a file with no row, so the post-purge invariant is "zero
 zombies, zero orphans" — a test we run today rather than a property we hope for.
 
@@ -297,13 +302,13 @@ which makes change propagation the central gap rather than one of many.
    Editing itself is not missing at all: **SlicerLive Native already ships a Segment Editor**, with
    threshold and auto-threshold, paint and erase, islands (keep-largest, remove-small), smoothing
    (median, open, close), margin grow/shrink, logical operations, and per-segment statistics —
-   `logic/segment-effects.ts` and `logic/segmentation-editor.ts`. Steve's `algorithms.html` and
+   SlicerLive's SlicerLive's `logic/segment-effects.ts` and `logic/segmentation-editor.ts`. Steve's `algorithms.html` and
    `nnlive.html` push further, into brush strokes and a model in the loop.
 
    So the open question is not *can we edit*; it is **does an edit land as an appended record that a
    query re-derives, rather than as mutated state**. That is a much smaller and much more testable
    question, and it is the whole of the remaining risk in principle 6. The candidate answer is the
-   lineage model in `Slicer/DICOMProvenance`, generalized, plus the deletion design above.
+   lineage model in the DICOM provenance prototype, generalized, plus the deletion design above.
 
    Note also where the unit debt actually sits: `applyMargin` takes `marginMm` and `spacingMm`. The
    millimetre assumption is not buried in a reader — it is in the editor, in a number the user
@@ -334,7 +339,7 @@ which makes change propagation the central gap rather than one of many.
 
 ### Known debt, already incurred
 
-8. **`RAS` appears in 162 files** in `src/SlicerLive`, and the millimetre assumption at ~18 sites
+8. **`RAS` appears in 162 files** in the SlicerLive tree, and the millimetre assumption at ~18 sites
    including `units: "mm"` returned as a literal. Inherited by copying, not yet paid down.
 9. **Coverage.** Records, query, payload, semantics and provenance are all unwritten.
 10. **The validation bar.** exfield's standard is golden-testing against the reference

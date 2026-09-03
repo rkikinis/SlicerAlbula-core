@@ -1,10 +1,21 @@
 # SlicerGotthard
 
-Ron Kikinis's line of work on what 3D Slicer's data model should be. Separate from
-`pieper/SlicerLive` on purpose: a proposal, in code, that can be taken apart.
+**A data model for imaging, where nothing is assumed.**
 
-It builds on other people's ingenuity, credited below and at the point of use. The **route** is
-mine.
+Every value that a reader would otherwise have to guess is written down instead: what an axis *is*,
+what unit it is in, which convention its geometry follows, and **how that geometry came to be known**.
+Every change is a new record rather than an overwrite, so history, provenance and editing are one
+mechanism instead of three. A view is a *selection* over records, not a structure you build and have
+to save.
+
+Ron Kikinis's playground, and independent by design — it depends on no other codebase, and it is
+meant to be taken apart. It builds on other people's ingenuity, credited below and at the point of
+use. The **route** is mine.
+
+It exists because medical imaging software is used from microscopy to astrophysics while its data
+models were built for clinical scale, and because twenty-five years of building one class per data
+kind has taught the field enough to generalize. 3D Slicer is the evidence base for that and the
+subject of the comparison in `ARCHITECTURE.md` — it is not a dependency.
 
 ## The name
 
@@ -28,9 +39,9 @@ Improvements are welcome and something better will be taken. What this is not is
 
 ## Principles
 
-`../docs/architecture-principles.md` — eleven of them, each naming the shipped example or the
+`docs/architecture-principles.md` — eleven of them, each naming the shipped example or the
 documented failure it came from, each with its cost stated rather than discounted.
-`../docs/data-model-design-2026-09-03.md` is the working-out, with the dead ends left in.
+`docs/data-model-design-2026-09-03.md` is the working-out, with the dead ends left in.
 
 Two rules govern the code itself:
 
@@ -44,15 +55,16 @@ Two rules govern the code itself:
 
 | | |
 |---|---|
-| `frame.ts` | A coordinate frame that says what its axes **are**: kind, unit, and the convention the spatial axes follow. RAS becomes one declared value instead of an invisible default, and nanometres and parsecs are as expressible as millimetres. |
+| `frame.ts` | A coordinate frame that says what its axes **are** — kind, unit, the convention the spatial axes follow, and **where each axis's geometry came from** (`acquired` / `derived` / `asserted` / `assumed`). RAS becomes one declared value instead of an invisible default; nanometres and parsecs are as expressible as millimetres; and a spacing somebody fixed by hand is distinguishable from one the scanner stated. |
+| `RECORDS.md` | Design sketch for the record model — four kinds of record, and the granularity argument. Plain-language explanation first. |
 
 ```
 deno test -A --no-check model/frame.test.ts
-deno doc --lint model/frame.ts          # documentation is part of the code, per Slicer's convention
+deno doc --lint model/frame.ts          # documentation lives in the code and is gated
 deno doc --html --name SlicerGotthard model/*.ts
 ```
 
-## What this replaces, and why it is not a style preference
+## A worked example of "nothing is assumed"
 
 3D Slicer stores every length in millimetres. That is not written in the data — it is a convention
 in the reader, documented in a comment (`vtkSlicerUnitsLogic.cxx`: *"in Slicer, 'length' quantity
@@ -111,7 +123,7 @@ EX/EXF format is what exfield reads.
 [`License.txt`](License.txt) — the **3D Slicer Contribution and Software License Agreement**,
 Version 1.0 (December 20, 2005). A BSD-style licence with extensions covering contributions.
 
-It is 3D Slicer's own licence, **verbatim**. Copied byte-for-byte from `Slicer/License.txt` rather
+It is 3D Slicer's own licence, **verbatim**. Copied byte-for-byte from 3D Slicer's own `License.txt` rather
 than retyped, and verified identical:
 
 ```

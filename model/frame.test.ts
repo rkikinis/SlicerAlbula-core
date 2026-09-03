@@ -5,21 +5,21 @@
 //
 //   deno test -A --no-check model/frame.test.ts
 import { assertAlmostEquals, assertEquals, assertThrows } from "jsr:@std/assert";
-import { type Frame, dimensionOf, flipsToRAS, normalizingScale, ras, rightHanded, scaleToBase, spatialAxes } from "./frame.ts";
+import { type Frame, dicomSeries, dimensionOf, flipsToRAS, normalizingScale, ras, rightHanded, scaleToBase, spatialAxes } from "./frame.ts";
 
 /** 0.5 mm isotropic clinical CT, 512 x 512 x 400 — the case everything already handles. */
-const CT = ras([0.5, 0, 0, -128, 0, 0.5, 0, -128, 0, 0, 0.5, -100, 0, 0, 0, 1]);
+const CT = dicomSeries([0.5, 0, 0, -128, 0, 0.5, 0, -128, 0, 0, 0.5, -100, 0, 0, 0, 1]);
 
 /** 4 nm isotropic electron microscopy, 2048 x 2048 x 512. No anatomical orientation exists. */
-const EM = rightHanded([4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1], "nm");
+const EM = rightHanded([4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1], "nm", "acquired");
 
 /** An HI data cube: two angular sky axes and a velocity axis. Not expressible in NIfTI at all. */
 const CUBE: Frame = {
   space: "sky-equatorial",
   axes: [
-    { name: "RA", kind: "space", unit: "deg" },
-    { name: "Dec", kind: "space", unit: "deg" },
-    { name: "velocity", kind: "spectral", unit: "km/s" },
+    { name: "RA", kind: "space", origin: "acquired", unit: "deg" },
+    { name: "Dec", kind: "space", origin: "acquired", unit: "deg" },
+    { name: "velocity", kind: "spectral", origin: "acquired", unit: "km/s" },
   ],
   toWorld: [-0.0025, 0, 0, 187.7, 0, 0.0025, 0, 12.4, 0, 0, 10, -500, 0, 0, 0, 1],
 };
@@ -95,7 +95,7 @@ Deno.test("rendering: extents nine orders of magnitude apart both normalize to O
 Deno.test("rendering: a frame with no spatial axis normalizes to 1", () => {
   const timeOnly: Frame = {
     space: "3D-right-handed",
-    axes: [{ name: "t", kind: "time", unit: "s" }],
+    axes: [{ name: "t", kind: "time", origin: "acquired", unit: "s" }],
     toWorld: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
   };
   assertEquals(normalizingScale(timeOnly, [100]), 1);
@@ -107,5 +107,28 @@ Deno.test("rendering: a frame with no spatial axis normalizes to 1", () => {
 Deno.test("interop: ras() is the frame Slicer assumes, and its unit is declared", () => {
   assertEquals(CT.space, "right-anterior-superior");
   assertEquals(CT.axes.map((a) => a.unit), ["mm", "mm", "mm"]);
-  assertEquals(ras([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "um").axes[0].unit, "um");
+  assertEquals(ras([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "um", "acquired").axes[0].unit, "um");
+});
+
+// The historical trap, encoded so it cannot be forgotten. In-plane spacing is stated by the scanner;
+// through-plane spacing has to be computed from consecutive slice positions. SliceThickness is a
+// different acquired number, and substituting it distorts a volume wherever there is a gap or an
+// overlap. Recording WHICH it was is the only way a later reader can tell.
+Deno.test("provenance: a DICOM series is acquired in plane and derived through plane", () => {
+  assertEquals(CT.axes.map((a) => a.origin), ["acquired", "acquired", "derived"]);
+});
+
+// Mixed origins are the ordinary case, not an error.
+Deno.test("provenance: mixed origins across one frame are legal", () => {
+  const fixedByHand = ras([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1], "mm",
+    ["acquired", "acquired", "asserted"]);
+  assertEquals(fixedByHand.axes[2].origin, "asserted");
+  assertEquals(spatialAxes(fixedByHand).filter((a) => a.origin === "acquired").length, 2);
+});
+
+// A frame whose geometry nobody vouched for is legal to construct and must be identifiable, because
+// the point is to be able to find it later rather than to forbid it at the door.
+Deno.test("provenance: an assumed frame is findable", () => {
+  const noMetadata = rightHanded([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "um", "assumed");
+  assertEquals(noMetadata.axes.every((a) => a.origin === "assumed"), true);
 });

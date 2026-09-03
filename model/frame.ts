@@ -25,6 +25,33 @@
  */
 
 /**
+ * Where a geometric value came from. Ron's observation, from twenty-five years of it going wrong:
+ * resolution lives in the acquisition metadata, and in Slicer it can be **overwritten by hand in
+ * the Volumes module** — after which the scene and the file disagree and nothing records that a
+ * person intervened, what they changed it from, or why.
+ *
+ * That is the half of "declaration over assumption" a declaration alone does not fix. Writing the
+ * spacing down is worth little if it can be silently replaced. So every axis says not just what its
+ * geometry is but **how that geometry was known**:
+ *
+ * - `acquired`  — read from the data's own metadata (DICOM `PixelSpacing`, a NRRD `space directions`).
+ * - `derived`   — computed from the data. The normal case for through-plane spacing, which comes from
+ *                 consecutive `ImagePositionPatient` values rather than from a tag. Historically this
+ *                 is where the damage happens: `SliceThickness` is *acquired* and is not the same
+ *                 number, and using it in place of the computed spacing silently distorts a volume
+ *                 wherever there is a gap or an overlap.
+ * - `asserted`  — set by a person, because the metadata was absent or wrong. This is a **record**, in
+ *                 the sense of `RECORDS.md`: who, when, what it was before, and why. Provenance of
+ *                 metadata, by the same mechanism as provenance of pixels.
+ * - `assumed`   — a fallback nobody chose. Always suspect, never silent: a reader may be configured
+ *                 to refuse rather than assume.
+ *
+ * A frame with mixed origins across its axes is the ordinary case, not an error — in a CT series the
+ * in-plane axes are `acquired` and the through-plane axis is `derived`.
+ */
+export type Origin = "acquired" | "derived" | "asserted" | "assumed";
+
+/**
  * What a single axis is. Four kinds, because the four domains on the table need exactly four:
  * clinical and microscopy need space and time, microscopy needs channel, radio astronomy needs a
  * spectral axis that is neither space nor time.
@@ -40,6 +67,8 @@ export interface Axis {
   name: string;
   /** How samples along this axis behave — see {@linkcode AxisKind}. */
   kind: AxisKind;
+  /** How this axis's geometry came to be known — see {@linkcode Origin}. */
+  origin: Origin;
   /**
    * Unit of this axis, as a UCUM-style code (`mm`, `nm`, `s`, `Hz`, `km/s`, `pc`). A `channel` axis
    * has no unit and must use `""`.
@@ -218,35 +247,68 @@ export function normalizingScale(f: Frame, dims: number[]): number {
   return maxExtent > 0 ? 1 / maxExtent : 1;
 }
 
+/** Spread one origin across three axes, or pass three. No default: a silent origin is the bug. */
+function three(o: Origin | [Origin, Origin, Origin]): [Origin, Origin, Origin] {
+  return Array.isArray(o) ? o : [o, o, o];
+}
+
 /**
- * The frame Slicer and SlicerLive assume today, made explicit.
+ * Three anatomical axes in right-anterior-superior order — the frame 3D Slicer assumes today, made
+ * explicit.
  *
  * Every existing caller of `ijkToRAS` is describing this frame; naming it is what turns an assumption
- * into a declaration. `spacing` is in `unit`.
+ * into a declaration. `origin` is required and has no default, because a value whose provenance is
+ * unstated is exactly the failure {@linkcode Origin} exists to prevent.
  */
-export function ras(toWorld: number[], unit = "mm"): Frame {
+export function ras(
+  toWorld: number[],
+  unit: string,
+  origin: Origin | [Origin, Origin, Origin],
+): Frame {
+  const [ox, oy, oz] = three(origin);
   return {
     space: "right-anterior-superior",
     axes: [
-      { name: "x", kind: "space", unit },
-      { name: "y", kind: "space", unit },
-      { name: "z", kind: "space", unit },
+      { name: "x", kind: "space", origin: ox, unit },
+      { name: "y", kind: "space", origin: oy, unit },
+      { name: "z", kind: "space", origin: oz, unit },
     ],
     toWorld,
   };
 }
 
 /**
+ * The frame of a reconstructed DICOM image series, with the origins that are actually true of one.
+ *
+ * This constructor exists to carry a historical trap in its name rather than in a comment nobody
+ * reads. In-plane spacing is **acquired** — it is `PixelSpacing`, stated by the scanner. Through-plane
+ * spacing is **derived**: the honest value comes from differencing consecutive `ImagePositionPatient`
+ * values across the series. `SliceThickness` is a different, *acquired* number describing the slab
+ * each slice integrates over, and it is not the spacing between slices. Substituting it distorts the
+ * volume wherever the series has a gap or an overlap — which is one of the oldest and most durable
+ * sources of quietly wrong geometry in medical imaging.
+ */
+export function dicomSeries(toWorld: number[], unit = "mm"): Frame {
+  return ras(toWorld, unit, ["acquired", "acquired", "derived"]);
+}
+
+/**
+
  * A frame with three spatial axes and no anatomical meaning — microCT, light and electron
  * microscopy, phantoms, anything where "anterior" is a category error.
  */
-export function rightHanded(toWorld: number[], unit: string): Frame {
+export function rightHanded(
+  toWorld: number[],
+  unit: string,
+  origin: Origin | [Origin, Origin, Origin],
+): Frame {
+  const [ox, oy, oz] = three(origin);
   return {
     space: "3D-right-handed",
     axes: [
-      { name: "x", kind: "space", unit },
-      { name: "y", kind: "space", unit },
-      { name: "z", kind: "space", unit },
+      { name: "x", kind: "space", origin: ox, unit },
+      { name: "y", kind: "space", origin: oy, unit },
+      { name: "z", kind: "space", origin: oz, unit },
     ],
     toWorld,
   };
