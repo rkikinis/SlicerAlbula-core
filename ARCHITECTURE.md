@@ -9,11 +9,17 @@ Built: `model/frame.ts` — a coordinate frame that declares what its axes are. 
 extracted from the source, licence in place.
 
 Established, by reading rather than assuming: 3D Slicer's data model is **not** DICOM-centric; MRML
-is; MRML is also the layer its own developers want rearchitected. And three independent designs —
-Michael Halle's Open Anatomy atlas (2018), Steve Pieper's ReMINDer (2026), and this project's Zarr
-working copies — converged on the same architecture without coordinating: leave the archive
-untouched, derive a small regenerable index carrying the semantics the archive cannot express,
-address payload by pointer, and make a view a **selection** rather than a construction.
+is; MRML is also the layer its own developers want rearchitected.
+
+**Scene-as-query is Michael Halle's idea, and Ron learned it from him.** An earlier draft of this
+document called it a convergence of three independent designs. That was wrong, and the correction
+matters under this project's own rule about acknowledgement: it is transmission, not coincidence.
+Mike's Open Anatomy atlas is the origin; Ron carried it here; Steve's ReMINDer is the same idea
+shipped. What the Zarr working copies add is a fourth application of it, not a fourth discovery.
+
+The idea itself: leave the archive untouched, derive a small regenerable index carrying the semantics
+the archive cannot express, address payload by pointer, and make a view a **selection** rather than a
+construction.
 
 Not built: records, query, payload resolution, semantics, provenance, editing. That is the work.
 
@@ -24,9 +30,15 @@ MRML is a **scene of typed C++ node classes**. `vtkMRMLScalarVolumeNode` holds a
 looks; `vtkMRMLSubjectHierarchyNode` arranges it; an observer/event mechanism keeps a hundred modules
 and every view in sync when any of it changes.
 
-It is not sloppy. It is *accreted*: adding a data kind means writing classes, and twenty-five years of
-different people writing classes for different needs produces divergence — not through carelessness,
-but because **the extension mechanism is code, and code diverges.**
+It is not sloppy, and "accreted" was the wrong emphasis. **Ron's framing is the right one: twenty-five
+years of MRML was the empirical phase, and we are now in a position to generalize from it.** Building
+a class per data kind is how you find out what the categories actually are. You cannot write the
+general model first; you earn it by having built the specific ones for a quarter century. MRML is the
+evidence, not the error.
+
+What generalizing means concretely is that the extension mechanism stops being code — because code
+diverges, and twenty-five years of different people writing classes for different needs is exactly
+where the divergence came from.
 
 That is the one structural claim this project rests on:
 
