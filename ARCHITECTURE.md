@@ -174,10 +174,38 @@ fingerprint of its source *inside itself* (principle 5). "Remove everything deri
 scan. That was not the reason for the principle; it is a payoff of it — and it is the mechanism that
 would have caught the tag cache, had the tag cache been ours.
 
-**Honest limits.** Deletion cannot reach exported data, someone else's copy, a Time Machine snapshot,
-or a filesystem block that has been freed but not overwritten. Export and backup are the boundaries
-where deletion stops being a technical guarantee and becomes a policy one, and the design should say
-so plainly instead of implying a completeness it cannot deliver.
+**Honest limits.** Deletion cannot reach exported data, someone else's copy, a system backup, or a
+filesystem block that has been freed but not overwritten. Export and backup are the boundaries where
+deletion stops being a technical guarantee and becomes a policy one, and the design should say so
+plainly instead of implying a completeness it cannot deliver.
+
+### The boundary, hit for real within the hour
+
+Having written that, we walked straight into it. `tmutil` reports that Time Machine includes both
+`/Applications` and the working folder, with a local snapshot predating the work. If the expunged
+study was present when that snapshot was taken, the snapshot holds it — index, files, and the tag
+cache — and the expunge is therefore incomplete outside the live filesystem.
+
+**This was raised and decided rather than discovered later.** Ron's answer: leave it alone, on stated
+grounds — the backup destination is **offline by default** and only mounted when actively in use, the
+disk is **encrypted**, and he is the **sole person with access**. Air-gapped by default, encrypted at
+rest, single authorized user. That is a defensible acceptance of a residual risk, and it is exactly
+the shape the boundary should have: a technical guarantee up to the filesystem, a **policy** decision
+beyond it, recorded with its reasoning.
+
+The generalisable form, which any system handling clinical data owes its users:
+
+> **An expunge must state its reach.** "Removed everywhere I can see, and here is what I cannot see"
+> is an honest and useful guarantee. "Deleted" on its own is not, and a system that says only
+> "deleted" is making a promise it cannot keep.
+
+A corollary for retention, adopted here and now enforced by `audit-database.py` rather than merely
+written down: **a pre-operation backup lives until the operation is verified, then it goes** —
+verification as the trigger, not a calendar. Three index backups guarding a path rewrite that had
+been verified 1357/1357 were still present a day later, each strictly behind the live index, such
+that restoring any of them would silently have dropped two derived series. The audit now reports a
+backup older than the index it came from as **STALE**, because a rule that is only in a document is a
+rule that decays.
 
 **Purge must be closed under references.** You cannot purge X while a derived record still points at
 it, unless the derivative is purged too or explicitly marked as orphaned. The useful part is that
