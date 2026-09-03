@@ -56,13 +56,16 @@ Two rules govern the code itself:
 | | |
 |---|---|
 | `frame.ts` | A coordinate frame that says what its axes **are** — kind, unit, the convention the spatial axes follow, and **where each axis's geometry came from** (`acquired` / `derived` / `asserted` / `assumed`). RAS becomes one declared value instead of an invisible default; nanometres and parsecs are as expressible as millimetres; and a spacing somebody fixed by hand is distinguishable from one the scanner stated. |
-| `RECORDS.md` | Design sketch for the record model — four kinds of record, and the granularity argument. Plain-language explanation first. |
+| `records.ts` | The record model: **dataset**, **group**, **derivation**, **note**. Ids are content hashes or random, never sequential. Validators refuse what would otherwise pass silently — a self-derivation, a frame whose axis count disagrees with the data's shape, a dangling reference, a free-text note filed under a countable category. |
+| `RECORDS.md` | The reasoning behind `records.ts` — plain-language explanation first, then the granularity argument. |
 
 ```
-deno test -A --no-check model/frame.test.ts
-deno doc --lint model/frame.ts          # documentation lives in the code and is gated
-deno doc --html --name SlicerGotthard model/*.ts
+deno test -A --no-check model/         # 30 tests
+deno doc --lint mod.ts                # documentation lives in the code and is gated
+deno doc --html --name SlicerGotthard mod.ts
 ```
+
+`mod.ts` is the entry point.
 
 ## A worked example of "nothing is assumed"
 
