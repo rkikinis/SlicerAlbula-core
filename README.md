@@ -57,10 +57,11 @@ Two rules govern the code itself:
 |---|---|
 | `frame.ts` | A coordinate frame that says what its axes **are** — kind, unit, the convention the spatial axes follow, and **where each axis's geometry came from** (`acquired` / `derived` / `asserted` / `assumed`). RAS becomes one declared value instead of an invisible default; nanometres and parsecs are as expressible as millimetres; and a spacing somebody fixed by hand is distinguishable from one the scanner stated. |
 | `records.ts` | The record model: **dataset**, **group**, **derivation**, **note**. Ids are content hashes or random, never sequential. Validators refuse what would otherwise pass silently — a self-derivation, a frame whose axis count disagrees with the data's shape, a dangling reference, a free-text note filed under a countable category. |
+| `session.ts` | The two operations over a store. **Deriving appends** — the parent is never touched, so an edit chain, a colleague's branch and an algorithm run are one shape. **Removing is destructive**, thorough by construction (it takes the whole dependency closure, so the store still validates), and undoable until `commit` closes the window. The undo buffer lives *outside* the store, which is why a committed delete leaves no tombstone and no gap. |
 | `RECORDS.md` | The reasoning behind `records.ts` — plain-language explanation first, then the granularity argument. |
 
 ```
-deno test -A --no-check model/         # 30 tests
+deno test -A --no-check model/         # 42 tests
 deno doc --lint mod.ts                # documentation lives in the code and is gated
 deno doc --html --name SlicerGotthard mod.ts
 ```
