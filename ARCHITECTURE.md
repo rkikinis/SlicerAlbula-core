@@ -98,16 +98,86 @@ objection to principle 6, and it has to be answered before anything is built on 
 **Append-only does not mean immutable.** It means no *silent overwrite*. Deletion is therefore a
 first-class operation that must be designed, not an absence to be explained away with a tombstone.
 
-**There are two deletes, and conflating them is the bug.**
+**There are three deletes, and conflating them is the bug.**
 
-| | means | history | reversible |
+| | means | what survives | reversible |
 |---|---|---|---|
-| **retract** | not in my scene; I am done with this result | survives | yes |
-| **purge** | this must not exist — patient data, withdrawn consent, a mistaken import | the *content* does not survive | no |
+| **retract** | not in my scene; I am done with this result | everything; it is a view change | yes |
+| **purge** | remove data that was legitimately here — consent withdrawn, retention expired | a receipt: *N objects, fingerprint H, at T, by A, reason R* | no |
+| **expunge** | this arrived **by accident** and should never have existed here | **nothing. no receipt, no fingerprint, no gap** | no |
 
-Most systems implement only one, and usually the wrong one. Ron's own standing constraint is a purge:
-one patient study was deleted from this database deliberately and must not be propagated by accident.
-A tombstone would not satisfy that; a scene-level removal would not either.
+The third one is Ron's actual case, and it defeated the design that had only the first two. A study
+entered this database by mistake; there should be **no trace of it**. A receipt is a trace.
+
+And a fingerprint is a *worse* trace than it looks. A content hash is only anonymous against
+unguessable inputs — for medical images the input is guessable, because anyone holding a copy of the
+study can hash it and match the receipt. So "keep the fingerprint, not the content" is a **membership
+oracle**: it confirms to a questioner that this data passed through here. For a purge that is exactly
+the accountability you want. For an expunge it is the thing you were trying to prevent.
+
+Expunge is therefore stricter than purge in a way that constrains the whole store:
+
+- no content, no metadata, **no fingerprint**;
+- **no structural evidence** — no gap in an id sequence, no deletion marker, nothing whose absence
+  implies a presence. An append-only log with monotonic ids cannot expunge entry 4173 without
+  leaving a hole that says *something was here*. So **records must be addressed by content or random
+  id, never by sequence**, and the primary store must carry no tombstones.
+- **no safety net.** Any backup taken before an expunge preserves precisely what the expunge exists
+  to remove. This is the one operation that cannot be made reversible, and a design that offers an
+  undo for it is lying.
+
+### What we actually found, doing this to the real database
+
+Checking rather than assuming, which is the only way this kind of claim means anything:
+
+**The index, the index backups, the provenance store, the Zarr cache, the filesystem and the
+DICOM files were all clean.** The database itself had been properly cleaned.
+
+**`ctkDICOMTagCache.sql` was not.** `SELECT count(*) … WHERE Value LIKE …` returned **0**; `strings`
+on the same file returned **156** hits. The rows had been deleted and the *bytes had not* — SQLite
+leaves deleted content in free pages until `VACUUM`. Proved by copying the file, vacuuming the copy,
+and re-counting: 156 before, 0 after. The file was a 1 GB regenerable cache and is now deleted.
+
+So the lesson is not "remember to clean the cache". It is:
+
+> **A delete is only as complete as the least-considered derived artifact.** Caches, thumbnails, tag
+> stores, index backups, search indexes and version history are all places a deletion does not
+> reach by default, and every one of them is created by something other than the code doing the
+> deleting.
+
+**Our own version history was the second trace.** Thirteen commits carried a patient surname in a
+notes file, put there by the very sentence stating that the study must not be propagated. `HEAD` had
+been scrubbed; history is not scrubbed by scrubbing `HEAD`. It required a full `filter-branch`, a
+reflog expiry and a `gc --prune`, verified by scanning every reachable blob in the object store.
+Which promotes the earlier design rule from advice to a constraint:
+
+> **Provenance and notes must be written so that they never need expunging.** Fingerprints and UIDs,
+> never names, never dates of birth. Not because names are hard to remove, but because *history* is,
+> and provenance is history by construction.
+
+**And the first scan I ran reported clean when it was not.** A plain `grep -ril` skipped the 1 GB
+binary; only `strings` and `grep --binary-files=text` found it. That is the second checker in this
+project to return a false negative on a file whose format it mishandled — the first being a VR
+validator that passed an implicit-VR file it could not parse. Hence exfield's rule, adopted here
+verbatim: **agreement with a tool is not the same as correctness.** An expunge must be verified by a
+method that cannot skip its target, and the verification is part of the operation, not a follow-up.
+
+### The invariant
+
+Purge and expunge must both be **closed under references**: nothing may point at what is gone. This
+is already testable — `Slicer/database/audit-database.py` defines a **zombie** as an index row whose
+file is missing and an **orphan** as a file with no row, so the post-deletion condition is *zero
+zombies, zero orphans*, which we run rather than hope for.
+
+And **deletion can find its own derivatives without a ledger**, because a derived artifact stores the
+fingerprint of its source *inside itself* (principle 5). "Remove everything derived from X" is a
+scan. That was not the reason for the principle; it is a payoff of it — and it is the mechanism that
+would have caught the tag cache, had the tag cache been ours.
+
+**Honest limits.** Deletion cannot reach exported data, someone else's copy, a Time Machine snapshot,
+or a filesystem block that has been freed but not overwritten. Export and backup are the boundaries
+where deletion stops being a technical guarantee and becomes a policy one, and the design should say
+so plainly instead of implying a completeness it cannot deliver.
 
 **Purge must be closed under references.** You cannot purge X while a derived record still points at
 it, unless the derivative is purged too or explicitly marked as orphaned. The useful part is that
@@ -144,8 +214,13 @@ imply otherwise.
 **For comparison, what happens today.** MRML has no answer at all: `RemoveNode()` and the node is
 gone from the scene, with nothing recording that it existed and no relationship to any MRB you saved
 earlier. ctkDICOMDatabase deletes rows and files, and the skew between those two is exactly why the
-audit script had to be written. So "deleted from Slicer" currently means *gone from this session, and
-possibly still present in three MRBs and a database*.
+audit script had to be written — and, as above, it does not touch its own tag cache. So "deleted from
+Slicer" currently means *gone from this session, and possibly still present in three MRBs, a tag
+cache, and a database*.
+
+None of the three operations above exists in Slicer today. That is the gap this section describes,
+and it is not a small one: a research platform that ingests clinical data cannot treat "this should
+never have been here" as an unsupported case.
 
 ## The gaps
 
