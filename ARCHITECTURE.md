@@ -110,33 +110,35 @@ objection to principle 6, and it has to be answered before anything is built on 
 **Append-only does not mean immutable.** It means no *silent overwrite*. Deletion is therefore a
 first-class operation that must be designed, not an absence to be explained away with a tombstone.
 
-**There are three deletes, and conflating them is the bug.**
+**Ron's review: three levels is over-designed. "You delete, with a temporary undo, as in the segment
+editor in Slicer." He is right, and here is the simplification.**
 
-| | means | what survives | reversible |
-|---|---|---|---|
-| **retract** | not in my scene; I am done with this result | everything; it is a view change | yes |
-| **purge** | remove data that was legitimately here — consent withdrawn, retention expired | a receipt: *N objects, fingerprint H, at T, by A, reason R* | no |
-| **expunge** | this arrived **by accident** and should never have existed here | **nothing. no receipt, no fingerprint, no gap** | no |
+Two of my three were not levels of delete at all:
 
-The third one is Ron's actual case, and it defeated the design that had only the first two. A study
-entered this database by mistake; there should be **no trace of it**. A receipt is a trace.
+- **"Remove from my scene" is not a delete.** It is a view operation — the object is untouched. It
+  belongs with the query layer, not here. Calling it a delete was a category error.
+- **"Keep a receipt" is not this application's job.** A regulator may require an erasure log; an
+  institution may keep one. That is a compliance system, not an imaging application, and inventing a
+  second grade of delete in order to hold a receipt was building someone else's feature.
 
-And a fingerprint is a *worse* trace than it looks. A content hash is only anonymous against
-unguessable inputs — for medical images the input is guessable, because anyone holding a copy of the
-study can hash it and match the receipt. So "keep the fingerprint, not the content" is a **membership
-oracle**: it confirms to a questioner that this data passed through here. For a purge that is exactly
-the accountability you want. For an expunge it is the thing you were trying to prevent.
+Which leaves **one delete**, exactly as the segment editor already does it:
 
-Expunge is therefore stricter than purge in a way that constrains the whole store:
+> **Delete, with a temporary undo. During the window it comes back. After the window it is gone —
+> everywhere.**
 
-- no content, no metadata, **no fingerprint**;
-- **no structural evidence** — no gap in an id sequence, no deletion marker, nothing whose absence
-  implies a presence. An append-only log with monotonic ids cannot expunge entry 4173 without
-  leaving a hole that says *something was here*. So **records must be addressed by content or random
-  id, never by sequence**, and the primary store must carry no tombstones.
-- **no safety net.** Any backup taken before an expunge preserves precisely what the expunge exists
-  to remove. This is the one operation that cannot be made reversible, and a design that offers an
-  undo for it is lying.
+The two hard requirements survive the simplification, and they are requirements *of the one
+operation* rather than variants of it:
+
+1. **It must be thorough.** "Everywhere" includes every derived copy, cache, thumbnail, tag store and
+   index. This is the part that is easy to get wrong and the part the evidence below is about.
+2. **It must leave no hole.** After the undo window closes, nothing may imply that something was
+   there — which is why record ids are content hashes or random, never sequential, and why the store
+   carries no tombstones.
+
+Note that requirement 2 is *why* the accidental-ingest case needs no special mode. If one delete is
+thorough and leaves no hole, then data that arrived by mistake is simply deleted. The three-level
+design existed to protect provenance, and provenance of a thing that should never have existed here
+is precisely what you do not want.
 
 ### What we actually found, doing this to the real database
 
