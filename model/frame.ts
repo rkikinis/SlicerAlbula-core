@@ -61,7 +61,13 @@ export interface Frame {
     | "left-posterior-superior"
     | "3D-right-handed"
     | "scanner-xyz"
-    /** Sky coordinates: axes are RA/Dec and are angular, not linear. */
+    /**
+     * Sky coordinates: the axes are right ascension and declination, and they are angular rather
+     * than linear. Not a NRRD value — this one is ours, and it stands in for the frames FITS WCS
+     * names properly with `CTYPE` codes such as `RA---SIN` and `DEC--SIN`. If astronomical data ever
+     * matters here beyond a single equatorial frame, take FITS's per-axis codes rather than growing
+     * this list.
+     */
     | "sky-equatorial";
   /** In sample order, so `axes[i]` describes index `i` of the data. */
   axes: Axis[];
