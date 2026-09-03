@@ -52,6 +52,83 @@ Three smaller points, plainly:
   cards a second. So a card may say *this model follows the tracker*, and the tracker's position
   simply streams past, never filed.
 
+## Granularity — how big is one card
+
+Ron's challenge, and it is the right one: *too many cards and the user is overwhelmed; too few and we
+miss important information. It should be automated as much as possible.*
+
+**The tension dissolves once you notice it is two questions, not one:**
+
+| | question | what it costs |
+|---|---|---|
+| **fidelity** | what gets *recorded* | storage, and deletion surface |
+| **legibility** | what gets *shown* | attention |
+
+Treated as one decision, every answer is wrong for one half. Treated separately: **record at the
+granularity of the smallest reproducible action; display at the granularity of intent.** Storage is
+cheap and attention is not, and a wrong display choice is recoverable while unrecorded information is
+gone — that asymmetry argues for recording finer than you show.
+
+### The recording boundary is already defined, by the editor
+
+The natural unit is not invented, it is sitting in `logic/segment-effects.ts`: `applyThreshold`,
+`applyAutoThreshold`, `applyIslands`, `applySmoothing`, `applyMargin`, `applyLogical`. Each is a
+named operation whose parameters **fully determine its output**, which is exactly the property that
+makes a card worth having: it is describable ("grow 2 mm"), reproducible, and replayable.
+
+Finer than that is worse, not better. One card per brush sample is not a record of a decision, it is
+a **behavioural log of a person working** — and note that this is data about the *clinician*, not the
+patient, which is a privacy question almost nobody asks. So a continuous paint gesture is one card,
+from mouse-down to mouse-up: the unit of intent, not of sampling.
+
+Coarser than that is also worse: one card per save loses which effects were applied, and with it the
+ability to branch from the middle.
+
+### What automates, and what cannot
+
+- **Fully automatic: everything about *how*.** Tool, version, parameters, timestamp, author, parent.
+  Zero prompts, ever. An algorithm run should need no manual input at all.
+- **Cannot be automated: *why it mattered*.** "This is the one for the tumour board." "The model
+  over-segmented the adrenal." That is judgment, and it is precisely the information lost if nobody
+  is ever asked.
+
+So the division of labour is: **the machine records what happened; the person occasionally says why
+it mattered** — and that contribution must be *rare and optional*. Requiring a reason on every edit
+is how a store fills up with "asdf".
+
+### Significance can be inferred, so nobody has to tag it
+
+Display collapses by default and expands on request — `git log` against `git log -p`. The question is
+which cards are milestones, and the answer is that **importance shows up as a fact about the graph**,
+not as a label somebody had to remember to apply:
+
+- a card that was **exported** (something left the system)
+- a card **someone else branched from**
+- a card the user **named**
+- a card where the **tool or author changed**
+- the **last** card of a session
+
+None of those needs a prompt. All of them are structural.
+
+### Compaction, which bounds the growth
+
+Fine cards during a session, and then — once a session closes and a result is accepted — **collapse
+the intermediate cards into one derivation carrying the accepted result.** Squashing a branch on
+merge, in effect.
+
+This is the part that answers the cost side rather than the legibility side. It bounds store growth,
+it removes the stroke-by-stroke record of a person working, and it shrinks the surface a future
+expunge has to reach — while keeping the lineage that has meaning. What it gives up is mid-session
+archaeology, permanently, which is a real loss and should be a **choice with a stated default**
+rather than something that silently happens.
+
+### The honest residue
+
+There is no way to know at write time what will matter later. Recording at the reproducible-action
+level and inferring significance afterwards is the best available answer, not a complete one, and the
+display heuristics above will sometimes be wrong. They are also cheap to change, which is the reason
+to put the guessing there rather than in the schema.
+
 ## The shape
 
 ```ts
