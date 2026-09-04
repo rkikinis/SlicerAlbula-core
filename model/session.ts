@@ -25,6 +25,8 @@
  * Note what is *not* here: nothing decides how long an undo window lasts. `commit` is called by
  * whoever owns the session — on close, on save, on a timer, after N operations. A data model that
  * legislated undo duration would be answering a question that belongs to the application.
+ *
+ * @module
  */
 import {
   type Dataset,

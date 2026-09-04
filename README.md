@@ -140,3 +140,20 @@ by someone who was not there.
 
 (Slicer also ships `COPYRIGHT.txt`, which carries the same agreement behind a stale header and a
 corrupted apostrophe. `License.txt` is the clean copy and the one to track.)
+
+## Documentation
+
+The documentation lives in the code, in human-readable form, and the site is extracted from it —
+3D Slicer's convention, whose `Docs/developer_guide/mrml.md` is one line of prose plus an
+`automodule` directive so that nothing is written twice and nothing can drift. Here the extractor
+is `deno doc` rather than Sphinx, reading the same JSDoc an editor shows on hover.
+
+```
+deno task doc        build the API site into docs/api/ (generated, not committed)
+deno task doc:lint   fail if anything exported is undocumented
+deno task test       42 tests over model/
+deno task check      type-check
+```
+
+`docs/index.md` says which module documents what, and where the design prose lives that has no
+symbol to hang on.

@@ -21,6 +21,8 @@
  * stream. Those are **bindings** — live values that never enter the store. A record may say that a
  * dataset is driven by a stream; the values flow past it. A store that admitted sixty values a second
  * would be destroyed within the hour.
+ *
+ * @module
  */
 import type { Frame } from "./frame.ts";
 

@@ -22,6 +22,8 @@
  * Deliberately absent, until a real case asks: unit algebra (one table is enough), non-linear
  * axes (FITS projections), per-axis direction strings (the frame name carries the convention, as in
  * NRRD, and the directions are already the columns of the affine).
+ *
+ * @module
  */
 
 /**

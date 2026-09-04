@@ -1,0 +1,16 @@
+{
+  "name": "@slicergotthard/core",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
+  "tasks": {
+    "test": "deno test --no-check model/",
+    "doc": "deno doc --html --name=SlicerGotthard --output=docs/api mod.ts",
+    "doc:lint": "deno doc --lint mod.ts",
+    "check": "deno check mod.ts model/"
+  },
+  "fmt": {
+    "lineWidth": 120,
+    "semiColons": true,
+    "singleQuote": false
+  }
+}

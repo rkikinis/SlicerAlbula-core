@@ -15,6 +15,8 @@
  *
  * `ARCHITECTURE.md` states what is built and what is missing; `model/RECORDS.md` explains the record
  * model in plain language before the code.
+ *
+ * @module
  */
 export * from "./model/frame.ts";
 export * from "./model/records.ts";
