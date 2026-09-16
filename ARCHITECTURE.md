@@ -47,7 +47,7 @@ where the divergence came from.
 
 That is the one structural claim this project rests on:
 
-> **MRML models data kinds as classes. SlicerGotthard models them as records with declared
+> **MRML models data kinds as classes. SlicerAlbula models them as records with declared
 > properties.** When the extension mechanism is data — a type value, a MIME type, an axis declaration
 > — divergence becomes something you can *validate* rather than something you discover.
 
@@ -55,7 +55,7 @@ Everything below follows from that.
 
 ## The improvements, itemized
 
-| | MRML | SlicerGotthard |
+| | MRML | SlicerAlbula |
 |---|---|---|
 | **adding a data kind** | a node class + a storage node + a display node + scene registration + a hierarchy plugin | a `type` value and a payload MIME type |
 | **a scene** | mutable in-memory node graph, serialized to MRB | a query over records; the query *is* the scene |

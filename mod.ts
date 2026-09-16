@@ -1,5 +1,5 @@
 /**
- * SlicerGotthard — a data model for imaging, where nothing is assumed.
+ * SlicerAlbula — a data model for imaging, where nothing is assumed.
  *
  * ```ts
  * import { dicomSeries, type Dataset, validateAll } from "./mod.ts";

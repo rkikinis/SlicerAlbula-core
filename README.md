@@ -1,4 +1,4 @@
-# SlicerGotthard
+# SlicerAlbula
 
 **A data model for imaging, where nothing is assumed.**
 
@@ -19,7 +19,7 @@ subject of the comparison in `ARCHITECTURE.md` — it is not a dependency.
 
 ## The name
 
-The Gotthard is the only place you cross the Alps on a **single** pass — every other route makes you
+The Albula is the only place you cross the Alps on a **single** pass — every other route makes you
 climb two or more. That is the strategic prize, and it was worthless until someone got past the
 **Schöllenen**, where the Reuss cuts a gorge with no bank to walk along. A bridge hung off the rock
 face in the 1220s opened it, and only then did the route, and Uri, become worth anything.
@@ -63,7 +63,7 @@ Two rules govern the code itself:
 ```
 deno test -A --no-check model/         # 42 tests
 deno doc --lint mod.ts                # documentation lives in the code and is gated
-deno doc --html --name SlicerGotthard mod.ts
+deno doc --html --name SlicerAlbula mod.ts
 ```
 
 `mod.ts` is the entry point.
@@ -125,7 +125,7 @@ EX/EXF format is what exfield reads.
 ## Licence
 
 **Apache-2.0** — [`License.txt`](License.txt), Copyright 2026 Ron Kikinis. Same licence as the
-SlicerGotthard workspace this was developed in.
+SlicerAlbula workspace this was developed in.
 
 **This changed on 2026-09-10, and the reasoning is worth keeping.** `License.txt` was originally 3D
 Slicer's own licence — the 3D Slicer Contribution and Software License Agreement, Version 1.0

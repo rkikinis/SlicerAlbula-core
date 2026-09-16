@@ -1,4 +1,4 @@
-# SlicerGotthard documentation
+# SlicerAlbula documentation
 
 Following 3D Slicer's convention: **the documentation lives in the code**, in human-readable form,
 and the published site is extracted from it. Slicer does this with Sphinx `autodoc` — its

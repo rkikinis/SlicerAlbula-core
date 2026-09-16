@@ -1,11 +1,11 @@
 {
-  "name": "@slicergotthard/core",
+  "name": "@sliceralbula/core",
   "version": "0.1.0",
   "exports": "./mod.ts",
   "license": "Apache-2.0",
   "tasks": {
     "test": "deno test --no-check model/",
-    "doc": "deno doc --html --name=SlicerGotthard --output=docs/api mod.ts",
+    "doc": "deno doc --html --name=SlicerAlbula --output=docs/api mod.ts",
     "doc:lint": "deno doc --lint mod.ts",
     "check": "deno check mod.ts model/"
   },
