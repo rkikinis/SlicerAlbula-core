@@ -7,7 +7,7 @@ documented failure — none of it is invention.
 
 The premise, in Ron's words: *"This is the best time to learn from a quarter century of experience
 and get to the best possible architectures."* The window is open because SlicerLive is still small.
-Every mistake catalogued here was locally reasonable when it was made and is now permanent.
+Every mistake cataloged here was locally reasonable when it was made and is now permanent.
 
 ---
 

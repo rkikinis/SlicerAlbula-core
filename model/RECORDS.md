@@ -77,7 +77,7 @@ named operation whose parameters **fully determine its output**, which is exactl
 makes a card worth having: it is describable ("grow 2 mm"), reproducible, and replayable.
 
 Finer than that is worse, not better. One card per brush sample is not a record of a decision, it is
-a **behavioural log of a person working** — and note that this is data about the *clinician*, not the
+a **behavioral log of a person working** — and note that this is data about the *clinician*, not the
 patient, which is a privacy question almost nobody asks. So a continuous paint gesture is one card,
 from mouse-down to mouse-up: the unit of intent, not of sampling.
 
@@ -92,7 +92,7 @@ ability to branch from the middle.
   over-segmented the adrenal." That is judgment, and it is precisely the information lost if nobody
   is ever asked.
 
-So the division of labour is: **the machine records what happened; the person occasionally says why
+So the division of labor is: **the machine records what happened; the person occasionally says why
 it mattered** — and that contribution must be *rare and optional*.
 
 A mandatory field does not produce information, it produces compliance. Demand a reason on every edit

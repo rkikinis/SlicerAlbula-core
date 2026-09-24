@@ -18,7 +18,7 @@ is; MRML is also the layer its own developers want rearchitected.
 
 **Scene-as-query is Michael Halle's idea, and Ron learned it from him.** An earlier draft of this
 document called it a convergence of three independent designs. That was wrong, and the correction
-matters under this project's own rule about acknowledgement: it is transmission, not coincidence.
+matters under this project's own rule about acknowledgment: it is transmission, not coincidence.
 Mike's Open Anatomy atlas is the origin; Ron carried it here; Steve's ReMINDer is the same idea
 shipped. What the Zarr working copies add is a fourth application of it, not a fourth discovery.
 
