@@ -76,10 +76,10 @@ and every reader and writer has paid a sign flip since. *Cost: `RAS` appears in 
 
 **10. A physical quantity is a number and a unit. Store both.**
 Slicer's units system can only reformat: `vtkSlicerUnitsLogic.cxx:224` — "in Slicer, 'length'
-quantity values are always expressed in millimeters" — so nanometre support is a display coefficient
+quantity values are always expressed in millimeters" — so nanometer support is a display coefficient
 and every unit clamps display to ±10000, giving a microscopist ±10 µm. We render in **float32**,
 where the governing quantity is the ratio of extent to smallest feature, so a canonical physical
-scale is precisely the wrong instrument. Datasets declare a scale to metres in `double`; the renderer
+scale is precisely the wrong instrument. Datasets declare a scale to meters in `double`; the renderer
 works in a scene-normalized frame (which is what WebGPU wants anyway for depth precision);
 measurements reconstruct in `double` and carry their unit. *We have already inherited the assumption
 at ~18 sites, including `units: "mm"` returned as a literal from `measurements.ts`.*

@@ -9,7 +9,7 @@ came from that CT, by nnInteractive, on a date, by a person), and a **note** (ne
 
 ## In plain language, before the code
 
-Think of a **library card catalogue**. The books are on the shelves — that is the DICOM data, sitting
+Think of a **library card catalog**. The books are on the shelves — that is the DICOM data, sitting
 where it sits, untouched. The cards describe the books. **You never rearrange the library to make a
 reading list; you pull cards.**
 
@@ -88,7 +88,7 @@ ability to branch from the middle.
 
 - **Fully automatic: everything about *how*.** Tool, version, parameters, timestamp, author, parent.
   Zero prompts, ever. An algorithm run should need no manual input at all.
-- **Cannot be automated: *why it mattered*.** "This is the one for the tumour board." "The model
+- **Cannot be automated: *why it mattered*.** "This is the one for the tumor board." "The model
   over-segmented the adrenal." That is judgment, and it is precisely the information lost if nobody
   is ever asked.
 
@@ -184,7 +184,7 @@ values flow outside it. A store that admitted them would be destroyed within the
 
 **6. No display type.** Presentation belongs to the view, not the record. Mike's atlas puts
 `renderOption` on the record, which is right for an atlas with one canonical look and wrong the
-moment two layouts want different colours for the same structure. So: a query's output, or its own
+moment two layouts want different colors for the same structure. So: a query's output, or its own
 record type later, but not a field here.
 
 **7. `sourceFingerprint` sits inside the payload of a derived thing** (principle 5). It is what lets
@@ -217,7 +217,7 @@ to nothing, a sequential-looking id.
 Ron loaded `RK-annotated segmented.mrb` into Slicer 5.13 and photographed the Segmentations module,
 with the note: *"In slicer you can not group the segmentations, which is a great annoyance to me."*
 
-What the module gives, per segment: **visibility · colour · opacity · name**, sortable by a header
+What the module gives, per segment: **visibility · color · opacity · name**, sortable by a header
 triangle, with double-click to edit the opacity and double-click to rename. Above the list, an
 **Overall visibility** and **Overall opacity**, then separate opacities for slice fill, slice outline
 and 3D. That last separation is worth copying and this project does not have it: one global

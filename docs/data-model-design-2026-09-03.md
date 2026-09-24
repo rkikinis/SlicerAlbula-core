@@ -644,7 +644,7 @@ Addendum 4 mentioned units only as an exfield footnote. Both were too generous, 
 that **units and axes are properties of the coordinate model itself**, not features layered on top —
 so getting them wrong is not a gap to fill later, it is a thing to rebuild.
 
-## What Slicer actually does: units for display, millimetres for storage
+## What Slicer actually does: units for display, millimeters for storage
 
 Slicer has a real units system. `vtkMRMLUnitNode` carries `Quantity`, `Prefix`, `Suffix`,
 `Precision`, `DisplayCoefficient` and `DisplayOffset`, with `GetDisplayValueFromValue()` and its
@@ -659,14 +659,14 @@ But `vtkSlicerUnitsLogic.cxx:224` states the actual model in one line:
 ```
 
 Nanometer's `DisplayCoefficient` is `GetDisplayCoefficient("nano", "milli")` = 10⁶ — a **display**
-conversion from stored millimetres. So the units system formats numbers; it does not carry them. The
-data model is millimetres, hardcoded by convention.
+conversion from stored millimeters. So the units system formats numbers; it does not carry them. The
+data model is millimeters, hardcoded by convention.
 
 Two tells that this leaks:
 
-- **Every unit clamps its display range to ±10000.** A microscopist working in nanometres can
-  therefore express ±10 µm. That is not a units system reaching microscopy; it is a millimetre
-  system with a nanometre printf.
+- **Every unit clamps its display range to ±10000.** A microscopist working in nanometers can
+  therefore express ±10 µm. That is not a units system reaching microscopy; it is a millimeter
+  system with a nanometer printf.
 - **`velocity` in km/s and `intensity` in W/m² are in the default set.** Those are radio-astronomy
   conventions, not clinical ones — evidence that other domains did push on this, and that they got
   as far as the *display* layer and no further.
@@ -682,7 +682,7 @@ mantissa, about 7 decimal digits. And precision is governed by the *ratio* of th
 the smallest feature, not by absolute magnitude. A canonical unit is therefore exactly the wrong
 instrument:
 
-| domain | native scale | as millimetres |
+| domain | native scale | as millimeters |
 |---|---|---|
 | electron microscopy | 1 nm voxels | 0.000001 |
 | light microscopy | 250 nm voxels | 0.00025 |
@@ -699,7 +699,7 @@ in: `barHalfMm`, `marginMm`, `units: "mm"` returned literally from
 `logic/markups/measurements.ts`, `volume mm^3` in `segmentation-editor.ts`, slice offsets in mm in
 `slice-interactor.ts`. Faithful reproduction of the original. It is cheap to fix now because it is
 mostly labels plus one or two conversions rather than a coordinate model; it stops being cheap the
-moment anything depends on those numbers being millimetres.
+moment anything depends on those numbers being millimeters.
 
 ## The design: store the quantity, render in a normalized frame
 
@@ -710,7 +710,7 @@ The conflation to break is between two different things a "canonical unit" provi
 
 Keep the first, drop the second:
 
-1. **Every dataset declares its unit** — a scale to metres, held in `double`. This is not novel and
+1. **Every dataset declares its unit** — a scale to meters, held in `double`. This is not novel and
    costs nothing: NRRD has `space units`, NIfTI has `xyzt_units`, OME-NGFF has `axes[].unit`, and
    exfield had to add `declared_unit` precisely because EX files state units nowhere. **The formats
    already carry this; Slicer discards it on import.** Reading it is the whole of step 1.
@@ -720,8 +720,8 @@ Keep the first, drop the second:
 3. **Measurements and display are reconstructed in `double` on the CPU** from unit × transform
    chain, and carry their unit rather than assuming it. `measurements.ts` returning
    `units: "mm"` as a literal is the exact line to change.
-4. **Cross-dataset alignment converts through metres in `double`**, never by assuming both sides are
-   already millimetres.
+4. **Cross-dataset alignment converts through meters in `double`**, never by assuming both sides are
+   already millimeters.
 
 This is the correct model, not an economical one: a physical quantity is a number *and* a unit, and
 storing only the number is simply wrong. That it happens to cost a field on a dataset, a scale in
@@ -750,7 +750,7 @@ exactly the direction we were already heading, which is worth knowing before des
 It changes which argument is strongest. §4 reached for meshes and simulation to show where
 DICOM-as-universal fails, and those are *missing IODs* — gaps that could in principle be filled.
 **Dimensions are not a gap; they are the coordinate model.** `PixelSpacing` is defined in
-millimetres. Microscopy DICOM (VL Whole Slide) therefore expresses a 250 nm pixel as 0.00025 mm,
+millimeters. Microscopy DICOM (VL Whole Slide) therefore expresses a 250 nm pixel as 0.00025 mm,
 which is legal and awkward; astrophysics has no DICOM representation at all and uses FITS with WCS,
 a different and older standard that solved world coordinates properly decades ago.
 
@@ -809,7 +809,7 @@ orientation bugs — the flipped-SEG trap the colorize example documents is exac
 
 **The naming is a boundary.** R-A-S means *Right, Anterior, Superior*. There is no anterior in a cell
 culture and no superior in a galaxy. So Slicer's internal frame is named for human anatomy, oriented
-by a vendor accident, and measured in millimetres (Addendum 5). Each of those three is defensible for
+by a vendor accident, and measured in millimeters (Addendum 5). Each of those three is defensible for
 clinical imaging; together they are a coordinate model that cannot describe the domains Slicer is
 actually used in.
 
@@ -823,14 +823,14 @@ theoretical; it is already producing warnings in the reader.
 **NRRD** has a `space` field whose legal values include the anatomical ones
 (`right-anterior-superior`, `left-posterior-superior`) *and* non-anatomical ones such as
 `3D-right-handed` and `scanner-xyz`, alongside `space units` per axis. A NRRD can therefore say "these
-axes are spatial, right-handed, in micrometres, and mean nothing anatomically" — exactly what
+axes are spatial, right-handed, in micrometers, and mean nothing anatomically" — exactly what
 microscopy needs.
 
 **FITS WCS** gives each axis its own type and unit: `CTYPE1 = 'RA---SIN'`, `CTYPE2 = 'DEC--SIN'`,
 `CTYPE3 = 'VELO-LSR'`, with `CUNIT`. Astronomy solved per-axis semantics decades ago.
 
 Slicer's coordinate doc cites the NRRD specification and `nrrd-iomf.pdf` in its own reference list —
-and then normalizes everything it reads into RAS and millimetres. The information needed to do
+and then normalizes everything it reads into RAS and millimeters. The information needed to do
 better arrives in the file and is discarded at the door.
 
 An open question I have *not* verified, worth checking before relying on it: Slicer "assumes that
@@ -843,7 +843,7 @@ would be a real bug rather than a design limitation.
 
 Unlike units, **this one is not cheap.** `RAS` appears in **162 files** in `src/SlicerLive` —
 `slice-renderer.ts` alone 46 times, `live-views.ts` 37, `mat4.ts` 18 — and we inherited the import
-flip too (`lps2ras` in both `dicom-series.ts` and `dicom-seg.ts`). Compare the millimetre assumption
+flip too (`lps2ras` in both `dicom-series.ts` and `dicom-seg.ts`). Compare the millimeter assumption
 at roughly eighteen label sites. Anyone claiming this is a small change has not counted.
 
 That count is the honest cost, and it is not a reason to skip the work. Almost all of the 162 is
@@ -862,7 +862,7 @@ So the correct fix is well-bounded, though not small:
 > Keep the matrix and call it `ijkToWorld`. Add a per-dataset **frame declaration** — for each axis a
 > name, a type (spatial / temporal / spectral / channel), a unit, and a direction meaning — and let
 > **RAS be one declared value rather than an invisible default.** Anatomical data declares RAS;
-> microscopy declares right-handed micrometres; a cube declares RA/Dec/velocity.
+> microscopy declares right-handed micrometers; a cube declares RA/Dec/velocity.
 
 That is one record per dataset, honest labels, and an audit of category 4 — against 162 files whose
 names change. The renderer does not change. **The cost is real and should be stated as work rather
@@ -935,7 +935,7 @@ NIFTI_UNITS_SEC   8   NIFTI_UNITS_MSEC 16  NIFTI_UNITS_USEC 24
 
 That is the entire vocabulary. So:
 
-- **no nanometres.** Electron microscopy at 1 nm must be written as `0.001` microns — into a
+- **no nanometers.** Electron microscopy at 1 nm must be written as `0.001` microns — into a
   `float32` spacing, in a format whose affine is also `float32`.
 - **no parsecs, no arcseconds, no Hertz-as-an-axis.** Astronomy is not expressible.
 - **one spatial unit for all three spatial axes**, since a single byte covers `pixdim[1..4]`. Per-axis
@@ -965,7 +965,7 @@ overloaded through `intent_code`. Axes cannot be named or typed.
 | **NIfTI-1** | 5 codes, RAS+ mandated | one byte, 6 values, shared | fixed by position | **float32** | **three methods, two can disagree** |
 
 **DICOM comes out ahead of NIfTI here**, which is worth stating plainly because it is the opposite
-of the usual folklore. DICOM's coordinate model is *narrow* — millimetres, LPS, three spatial axes —
+of the usual folklore. DICOM's coordinate model is *narrow* — millimeters, LPS, three spatial axes —
 but it is unambiguous, single-method, and stored as arbitrary-precision decimal strings. NIfTI is
 broader in ambition and ambiguous in practice, and ambiguity is the worse failure: a narrow model
 tells you honestly that your data does not fit, while an ambiguous one loads and is quietly wrong.

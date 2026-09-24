@@ -2,17 +2,17 @@
  * A coordinate frame that says what its axes ARE.
  *
  * Today both 3D Slicer and SlicerLive assume the answer: axes are anatomical, the basis is RAS, and
- * lengths are millimetres. None of that is written down anywhere in the data — it is a convention
+ * lengths are millimeters. None of that is written down anywhere in the data — it is a convention
  * held in the reader, and the two places it is documented are a comment
  * (`vtkSlicerUnitsLogic.cxx`: "in Slicer, 'length' quantity values are always expressed in
  * millimeters") and a paragraph in the user guide explaining that RAS was adopted because several GE
  * researchers were early contributors. Every Slicer reader and writer has paid a sign flip ever
  * since, and a microscopist working in nanometres can display +/-10 um because the unit is a display
- * coefficient over stored millimetres.
+ * coefficient over stored millimeters.
  *
  * The fix is not a bigger unit system. It is to stop assuming: carry the affine, and carry a
  * declaration of what the axes mean. Then RAS is one value rather than an invisible default, and
- * nanometres and parsecs are as expressible as millimetres.
+ * nanometres and parsecs are as expressible as millimeters.
  *
  * Two formats already do this and are worth copying rather than improving on. NRRD names the frame
  * (`space: right-anterior-superior`, but also `3D-right-handed` and `scanner-xyz`) and gives axes
@@ -58,7 +58,7 @@ export type Origin = "acquired" | "derived" | "asserted" | "assumed";
  * clinical and microscopy need space and time, microscopy needs channel, radio astronomy needs a
  * spectral axis that is neither space nor time.
  *
- * The distinction is not cosmetic — it decides behaviour. You interpolate `space` and `spectral`,
+ * The distinction is not cosmetic — it decides behavior. You interpolate `space` and `spectral`,
  * you step through `time`, and you must never interpolate `channel`, whose values are labels.
  */
 export type AxisKind = "space" | "time" | "spectral" | "channel";
@@ -82,7 +82,7 @@ export interface Axis {
  * A frame: the axes, plus the affine that maps sample indices to world coordinates.
  *
  * `space` names the convention the spatial axes follow, which the axes themselves cannot express:
- * three spatial axes in millimetres could be RAS or LPS, and the difference is a sign flip on two of
+ * three spatial axes in millimeters could be RAS or LPS, and the difference is a sign flip on two of
  * them. Values follow NRRD's vocabulary so a NRRD can round-trip without translation.
  */
 export interface Frame {
@@ -113,13 +113,13 @@ export interface Frame {
 
 /**
  * Physical dimension of a unit. Separate from `AxisKind` because they are genuinely different
- * questions: a metre is a length whether it measures a distance or a wavelength, and an axis kind
+ * questions: a meter is a length whether it measures a distance or a wavelength, and an axis kind
  * says how to *treat* samples, not what they measure.
  */
 export type Dimension = "length" | "time" | "frequency" | "velocity" | "angle";
 
 /**
- * Every unit we accept, with its dimension and its scale to that dimension's SI base (metre, second,
+ * Every unit we accept, with its dimension and its scale to that dimension's SI base (meter, second,
  * hertz, radian).
  *
  * One table rather than a unit algebra: the set of units that actually occur is small, and a parser

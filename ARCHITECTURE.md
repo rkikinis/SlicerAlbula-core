@@ -11,7 +11,7 @@ runtime dependency in the whole repository is a test assertion library.
 ## Where we are
 
 Built: `model/frame.ts` — a coordinate frame that declares what its axes are. 10 tests, documentation
-extracted from the source, licence in place.
+extracted from the source, license in place.
 
 Established, by reading rather than assuming: 3D Slicer's data model is **not** DICOM-centric; MRML
 is; MRML is also the layer its own developers want rearchitected.
@@ -62,7 +62,7 @@ Everything below follows from that.
 | **hierarchy** | one subject-hierarchy tree | edges, so many hierarchies coexist over one set of data |
 | **file formats** | ~20 `vtkMRMLStorageNode` subclasses | a `mimeType` on a payload pointer |
 | **coordinates** | RAS assumed, undeclared | declared: per-axis kind, unit, and the spatial convention |
-| **units** | display-only — a `DisplayCoefficient` over stored millimetres | carried with the quantity, converted in f64 |
+| **units** | display-only — a `DisplayCoefficient` over stored millimeters | carried with the quantity, converted in f64 |
 | **representations** | source-and-derived with invalidation — correct, but welded inside `vtkSegmentation` | one general mechanism for any record |
 | **edits** | mutate nodes; undo is a separate stack | append; the history *is* the record set |
 | **provenance** | none, beyond what a module writes for itself | the same mechanism as editing |
@@ -71,7 +71,7 @@ Everything below follows from that.
 
 Three of these matter more than the rest.
 
-**Declaration over assumption.** RAS and millimetres are the concrete instances, but the general rule
+**Declaration over assumption.** RAS and millimeters are the concrete instances, but the general rule
 is that *anything a reader must know which is not in the data is a latent bug*. Slicer documents both
 assumptions honestly — in a source comment and a user-guide paragraph — and pays for them in every
 reader and writer. `frame.ts` is the first application of the rule, not the whole of it.
@@ -283,7 +283,7 @@ prototyped there — which is the difference between a gap and an unread bibliog
 - **`cardiac.html`** — 4D volume rendering of a beating heart. 4D is not hypothetical.
 - **`segroulette.html`** — a random segmentation out of **190,000+ IDC DICOM SEGs across 36
   collections**. **Scale** was gap 13; there is prior art at three times this database's size.
-- **`islands.html`** — a stress test for nested segmentations, tumours inside a liver. Directly
+- **`islands.html`** — a stress test for nested segmentations, tumors inside a liver. Directly
   relevant to overlap, which a labelmap cannot represent.
 - **`remote.html`** — volume rendering on a transient cloud NVIDIA L4. The discrete-GPU case that was
   deferred as "only matters for discrete cards" is live.
@@ -311,7 +311,7 @@ which makes change propagation the central gap rather than one of many.
    lineage model in the DICOM provenance prototype, generalized, plus the deletion design above.
 
    Note also where the unit debt actually sits: `applyMargin` takes `marginMm` and `spacingMm`. The
-   millimetre assumption is not buried in a reader — it is in the editor, in a number the user
+   millimeter assumption is not buried in a reader — it is in the editor, in a number the user
    types.
 
 2. **There is no change-propagation design at all.** If a view is a query result, what tells it the
@@ -339,7 +339,7 @@ which makes change propagation the central gap rather than one of many.
 
 ### Known debt, already incurred
 
-8. **`RAS` appears in 162 files** in the SlicerLive tree, and the millimetre assumption at ~18 sites
+8. **`RAS` appears in 162 files** in the SlicerLive tree, and the millimeter assumption at ~18 sites
    including `units: "mm"` returned as a literal. Inherited by copying, not yet paid down.
 9. **Coverage.** Records, query, payload, semantics and provenance are all unwritten.
 10. **The validation bar.** exfield's standard is golden-testing against the reference

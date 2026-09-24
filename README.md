@@ -48,14 +48,14 @@ Two rules govern the code itself:
 - **As simple as possible, as complex as needed.** Unused generality is its own kind of wrong. Four
   axis kinds because four domains need exactly four; one unit table because two tables can disagree.
 - **Refuse to guess.** Every failure this layer prevents looks like success — a microscopy volume
-  flipped as though it were anatomical, a nanometre read as a millimetre, a velocity converted as a
+  flipped as though it were anatomical, a nanometre read as a millimeter, a velocity converted as a
   length. So the tests mostly assert that something throws.
 
 ## `model/`
 
 | | |
 |---|---|
-| `frame.ts` | A coordinate frame that says what its axes **are** — kind, unit, the convention the spatial axes follow, and **where each axis's geometry came from** (`acquired` / `derived` / `asserted` / `assumed`). RAS becomes one declared value instead of an invisible default; nanometres and parsecs are as expressible as millimetres; and a spacing somebody fixed by hand is distinguishable from one the scanner stated. |
+| `frame.ts` | A coordinate frame that says what its axes **are** — kind, unit, the convention the spatial axes follow, and **where each axis's geometry came from** (`acquired` / `derived` / `asserted` / `assumed`). RAS becomes one declared value instead of an invisible default; nanometres and parsecs are as expressible as millimeters; and a spacing somebody fixed by hand is distinguishable from one the scanner stated. |
 | `records.ts` | The record model: **dataset**, **group**, **derivation**, **note**. Ids are content hashes or random, never sequential. Validators refuse what would otherwise pass silently — a self-derivation, a frame whose axis count disagrees with the data's shape, a dangling reference, a free-text note filed under a countable category. |
 | `session.ts` | The two operations over a store. **Deriving appends** — the parent is never touched, so an edit chain, a colleague's branch and an algorithm run are one shape. **Removing is destructive**, thorough by construction (it takes the whole dependency closure, so the store still validates), and undoable until `commit` closes the window. The undo buffer lives *outside* the store, which is why a committed delete leaves no tombstone and no gap. |
 | `RECORDS.md` | The reasoning behind `records.ts` — plain-language explanation first, then the granularity argument. |
@@ -70,7 +70,7 @@ deno doc --html --name SlicerAlbula mod.ts
 
 ## A worked example of "nothing is assumed"
 
-3D Slicer stores every length in millimetres. That is not written in the data — it is a convention
+3D Slicer stores every length in millimeters. That is not written in the data — it is a convention
 in the reader, documented in a comment (`vtkSlicerUnitsLogic.cxx`: *"in Slicer, 'length' quantity
 values are always expressed in millimeters"*) and in a user-guide paragraph explaining that RAS was
 adopted because several GE researchers were early contributors. The consequences are still being
@@ -88,7 +88,7 @@ source, at the line that copies it, not only in this section. That also makes th
 *checkable*: a reader can go and see whether NRRD really says what is claimed of it.
 
 **Steve Pieper** — [SlicerLive](https://github.com/pieper/SlicerLive) and
-[live](https://github.com/pieper/live). The WebGPU imaging application this work is in dialogue
+[live](https://github.com/pieper/live). The WebGPU imaging application this work is in dialog
 with, and the reason a browser can render clinical volumes at all. His **ReMINDer** is also, so far
 as I know, the first *shipped* instance of a scene being a **query** rather than a construction: an
 index plus a URL selection — `loadIndex(...)` and a case id — with no scene file anywhere.
@@ -122,13 +122,13 @@ semantics decades before medical imaging noticed it needed to. **OME-NGFF**, for
 (`name`, `type`, `unit`) on Zarr. **OpenCMISS-Zinc** and the **SPARC** scaffold ecosystem, whose
 EX/EXF format is what exfield reads.
 
-## Licence
+## License
 
-**Apache-2.0** — [`License.txt`](License.txt), Copyright 2026 Ron Kikinis. Same licence as the
+**Apache-2.0** — [`License.txt`](License.txt), Copyright 2026 Ron Kikinis. Same license as the
 SlicerAlbula workspace this was developed in.
 
 **This changed on 2026-09-10, and the reasoning is worth keeping.** `License.txt` was originally 3D
-Slicer's own licence — the 3D Slicer Contribution and Software License Agreement, Version 1.0
+Slicer's own license — the 3D Slicer Contribution and Software License Agreement, Version 1.0
 (December 20, 2005) — copied verbatim, and this section used to say it must never be substituted,
 because that text took a year to negotiate.
 
@@ -143,7 +143,7 @@ and decided to follow Steve and Mike's lead."* [haversack](https://github.com/mh
 [SlicerLive](https://github.com/pieper/SlicerLive) are both Apache-2.0, and this is meant to sit
 beside them.
 
-None of that is a criticism of Slicer's licence, which still governs Slicer.
+None of that is a criticism of Slicer's license, which still governs Slicer.
 
 ## Documentation
 

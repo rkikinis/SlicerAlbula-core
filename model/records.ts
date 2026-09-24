@@ -12,7 +12,7 @@
  * every reader guesses, which is the failure this model exists to prevent.
  *
  * Deliberately absent: any display or appearance type (that belongs to the view, not the record, and
- * putting a colour on a record stops working the moment two layouts want different colours for one
+ * putting a color on a record stops working the moment two layouts want different colors for one
  * structure); any version field (appending is the versioning); any deletion marker (see `Id`); and
  * any registry or plugin mechanism, because a `type` string and a `mediaType` string *are* the
  * extension mechanism.
@@ -319,7 +319,7 @@ export function validateAll(records: readonly Record_[]): void {
  * Walk a record's ancestry, nearest parent first.
  *
  * Lineage is derived by following `Derivation.parent` rather than stored, so it cannot disagree with
- * the records it summarises. Cycles are refused rather than followed — a cycle means the store is
+ * the records it summarizes. Cycles are refused rather than followed — a cycle means the store is
  * corrupt, and returning a truncated chain would hide that.
  *
  * @throws if the derivation graph contains a cycle.

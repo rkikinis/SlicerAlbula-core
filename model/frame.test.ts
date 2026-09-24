@@ -1,7 +1,7 @@
 // What a frame has to get right is not arithmetic, it is refusing to guess. So most of these tests
 // assert that something throws or returns null, because the failures this module exists to prevent
 // all look like success: a microscopy volume silently flipped as though it were LPS, a nanometre
-// spacing quietly treated as millimetres, a velocity axis converted as a length.
+// spacing quietly treated as millimeters, a velocity axis converted as a length.
 //
 //   deno test -A --no-check model/frame.test.ts
 import { assertAlmostEquals, assertEquals, assertThrows } from "jsr:@std/assert";
@@ -33,7 +33,7 @@ Deno.test("units: scale to the SI base of the unit's own dimension", () => {
   assertAlmostEquals(scaleToBase("space", "pc"), 3.0857e16, 1e13);
 });
 
-// The whole point. A unit that is not in the table is not assumed to be millimetres.
+// The whole point. A unit that is not in the table is not assumed to be millimeters.
 Deno.test("units: an unknown unit throws rather than defaulting", () => {
   assertThrows(() => scaleToBase("space", "furlong"), Error, "unknown unit");
   assertThrows(() => scaleToBase("space", ""), Error, "unknown unit");
@@ -46,7 +46,7 @@ Deno.test("units: a unit of the wrong dimension throws", () => {
   assertThrows(() => scaleToBase("space", "Hz"), Error, "frequency unit");
 });
 
-// A wavelength axis in metres is legal; the same metre on a time axis is not. One table, two answers.
+// A wavelength axis in meters is legal; the same meter on a time axis is not. One table, two answers.
 Deno.test("units: spectral axes accept frequency, wavelength and velocity", () => {
   assertEquals(scaleToBase("spectral", "GHz"), 1e9);
   assertEquals(scaleToBase("spectral", "m"), 1);
@@ -75,7 +75,7 @@ Deno.test("axes: spatial axes are found by kind, not by position", () => {
 });
 
 // Two datasets nine orders of magnitude apart both normalize to O(1), which is what makes them
-// renderable in f32 in the same scene. Storing either in millimetres would put one at 8e-6 and the
+// renderable in f32 in the same scene. Storing either in millimeters would put one at 8e-6 and the
 // other at 2.6e2 -- both representable, neither safe to add to the other.
 Deno.test("rendering: extents nine orders of magnitude apart both normalize to O(1)", () => {
   const ctScale = normalizingScale(CT, [512, 512, 400]);
@@ -102,7 +102,7 @@ Deno.test("rendering: a frame with no spatial axis normalizes to 1", () => {
 });
 
 // What Slicer stores today is exactly ras(...) -- naming it is the whole change. This test records
-// that the default is millimetres so that a future edit to the default is a visible test failure
+// that the default is millimeters so that a future edit to the default is a visible test failure
 // rather than a silent reinterpretation of every existing dataset.
 Deno.test("interop: ras() is the frame Slicer assumes, and its unit is declared", () => {
   assertEquals(CT.space, "right-anterior-superior");
